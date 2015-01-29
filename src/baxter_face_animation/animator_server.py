@@ -106,7 +106,7 @@ def main():
     rospy.init_node('animator_server', anonymous=True)
     rate = rospy.Rate(30)
     rospack = rospkg.RosPack()
-    path = rospack.get_path('baxter_screen_writer') + "/data/avery_v1"
+    path = rospack.get_path('baxter_face_animation') + "/data/avery_v1"
 
     Animation(path)
     while not rospy.is_shutdown():
