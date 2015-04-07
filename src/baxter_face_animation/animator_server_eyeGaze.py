@@ -22,13 +22,13 @@ class Animation:
 
         self.image_publisher = rospy.Publisher("/robot/xdisplay", Image,
                                                queue_size=10)
-        self.value_subscriber = rospy.Subscriber("/confusion/value/command", Int32, self.set_value)
+        self.value_subscriber = rospy.Subscriber("/eyeGaze/value/command", Int32, self.set_value)
 
-        self.target_subscriber = rospy.Subscriber("/confusion/target/command", Int32, self.set_target)
+        self.value_subscriber = rospy.Subscriber("/eyeGaze/target/command", Int32, self.set_target)
 
-        self.value_publisher = rospy.Publisher("/confusion/value/state", Int32,
+        self.value_publisher = rospy.Publisher("/eyeGaze/value/state", Int32,
                                                queue_size=10)
-        self.target_publisher = rospy.Publisher("/confusion/target/state", Int32,
+        self.target_publisher = rospy.Publisher("/eyeGaze/target/state", Int32,
                                                 queue_size=10)
 
         self.timer = rospy.Timer(rospy.Duration(self.velocity), self.timer_cb)
@@ -52,10 +52,9 @@ class Animation:
         if isinstance(value, Int32):
             print "setting value from topic"
             value = value.data
-        self.current_value = value
-        self.current_idx = int((value / 100.0) * (len(self.images)))
 
-        print self.current_idx
+        self.current_value = value
+        self.current_idx = int(value)#int((value / 100.0) * len(self.images))
         self.checkrep()
         return self.publish_image()
 
@@ -71,7 +70,7 @@ class Animation:
     def set_target(self, target):
         if isinstance(target, Int32):
             print "setting target from topic"
-            target = target.data
+            target = ((target.data)/3.75)+25
 
         print "setting target", target
         self.current_target = target
@@ -108,7 +107,7 @@ def main():
     rospy.init_node('animator_server', anonymous=True)
     rate = rospy.Rate(30)
     rospack = rospkg.RosPack()
-    path = rospack.get_path('baxter_face_animation') + "/data/confused"
+    path = rospack.get_path('baxter_face_animation') + "/data/SIDE"
 
     Animation(path)
     while not rospy.is_shutdown():
