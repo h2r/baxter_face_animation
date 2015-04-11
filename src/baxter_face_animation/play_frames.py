@@ -77,7 +77,7 @@ class FramePlayer:
 
 def main(): 
 	parser = argparse.ArgumentParser(description='Play frames')
-	parser.add_argument("frame_dir", help="the directory containing the frames")
+	parser.add_argument("frame_dir", help="the directory containing the frames, typically starts with 'data'")
 	parser.add_argument('--reps', type=int, required=False, help="Number of repetitions")
 	parser.add_argument('--reverse', help="reverse animation after playing", action='store_true')
 	parser.add_argument('--pause', help="time to pause after completion", type=float)
@@ -86,15 +86,15 @@ def main():
 
 	rospy.init_node('frame_player', anonymous=True)
 
-	vid_directory = opts.frame_dir
+	rospack = rospkg.RosPack()
+	path = rospack.get_path('baxter_face_animation')
+
+	vid_directory = path + '/' + opts.frame_dir
 	repeat = opts.reps
 	pause = opts.pause
 	fp = FramePlayer(vid_directory, repeat, opts.reverse, pause)
 	fp.play()
 
-	if opts.reverse: 
-		reverse_time = 2
-	print fp.duration()
 	rospy.sleep(fp.duration())
 
 main()
