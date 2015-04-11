@@ -14,17 +14,19 @@ from os import sys
 from PyQt4.QtCore import SIGNAL, QTimer
 
 class FramePlayer: 
-	def __init__(self, vid_directory, repeat): 
+	def __init__(self, vid_directory, repeat=0, reverse=False): 
+
+		self.repeat = repeat
+		self.reverse = reverse
+
 		self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=100)
 		files = sorted([ f for f in listdir(vid_directory) ])
 		self.images = [cv2.imread(vid_directory + f) for f in files]
-		self.rate = rospy.Rate(50)
-		self.repeat = repeat
+
 		self.repetitions = 0
-
 		self.velocity = (1/20.0)
-
 		self.current_frame = 0
+		self.delta = 1
 
 
 	def play(self): 
@@ -32,7 +34,11 @@ class FramePlayer:
 
 	def play_cb(self, time): 
 		if (self.current_frame >= len(self.images)):
-			self.repetitions += 1
+			if not self.reverse or (self.reverse and self.delta == -1): 
+				self.repetitions += 1
+				self.delta = 1
+			if self.reverse: 
+				self.delta = -1
 			if (self.repetitions > self.repeat): 
 				exit()
 			else: 
@@ -41,7 +47,7 @@ class FramePlayer:
 		image = self.images[self.current_frame]
 		msg = cv_bridge.CvBridge().cv2_to_imgmsg(image, encoding="bgr8")
 		self.image_publisher.publish(msg)
-		self.current_frame = self.current_frame + 1
+		self.current_frame += self.delta
 
 
 
@@ -50,6 +56,7 @@ def main():
 	parser = argparse.ArgumentParser(description='Play frames')
 	parser.add_argument("frame_dir", help="the directory containing the frames")
 	parser.add_argument('--reps', type=int, required=False, help="Number of repetitions")
+	parser.add_argument('--reverse', help="reverse animation after playing", action='store_true')
 	opts = parser.parse_args()
 
 
@@ -59,7 +66,7 @@ def main():
 	repeat = opts.reps
 	if not repeat: 
 		repeat = 0
-	fp = FramePlayer(vid_directory, repeat)
+	fp = FramePlayer(vid_directory, repeat, opts.reverse)
 	fp.play()
 	rospy.sleep(repeat * fp.velocity * (len(fp.images)) + fp.velocity * 2)
 
