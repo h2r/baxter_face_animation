@@ -14,10 +14,11 @@ from os import sys
 from PyQt4.QtCore import SIGNAL, QTimer
 
 class FramePlayer: 
-	def __init__(self, vid_directory, repeat=0, reverse=False): 
+	def __init__(self, vid_directory, repeat=0, reverse=False, pause=0.0): 
 
 		self.repeat = repeat
 		self.reverse = reverse
+		self.pause
 
 		self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=100)
 		files = sorted([ f for f in listdir(vid_directory) ])
@@ -38,13 +39,16 @@ class FramePlayer:
 				self.delta = 1
 				self.repetitions += 1
 				self.current_frame = 0
+				if self.pause: rospy.sleep(pause)
 			elif self.delta == 1  and self.current_frame == len(self.images): 
 				self.current_frame -= 1
 				self.delta = -1
+				if self.pause: rospy.sleep(pause)
 		else: 
 			if (self.current_frame >= len(self.images)):
 				self.repetitions += 1
 				self.current_frame = 0
+				if self.pause: rospy.sleep(pause)
 
 		if self.repetitions > self.repeat: 
 			print self.current_frame
@@ -64,6 +68,7 @@ def main():
 	parser.add_argument("frame_dir", help="the directory containing the frames")
 	parser.add_argument('--reps', type=int, required=False, help="Number of repetitions")
 	parser.add_argument('--reverse', help="reverse animation after playing", action='store_true')
+	parser.add_argument('--pause', help="time to pause after completion", type=float)
 	opts = parser.parse_args()
 
 
@@ -73,7 +78,10 @@ def main():
 	repeat = opts.reps
 	if not repeat: 
 		repeat = 0
-	fp = FramePlayer(vid_directory, repeat, opts.reverse)
+	pause = opts.pause
+	if not pause: 
+		pause = 0.0
+	fp = FramePlayer(vid_directory, repeat, opts.reverse, pause)
 	fp.play()
 
 	reverse_time = 1
