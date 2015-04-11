@@ -6,6 +6,7 @@ import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int32, Float32
 import rospkg
+import argparse
 
 from os import listdir
 from os.path import isfile, join
@@ -46,14 +47,18 @@ class FramePlayer:
 
 
 def main(): 
-	if (len(sys.argv) < 2): 
-		print("usage: play_frames.py <frame_dir (ends in /)> <repeatNum>")
-		return
+	parser = argparse.ArgumentParser(description='Play frames')
+	parser.add_argument("frame_dir", help="the directory containing the frames")
+	parser.add_argument('--reps', type=int, required=False, help="Number of repetitions")
+	opts = parser.parse_args()
+
 
 	rospy.init_node('frame_player', anonymous=True)
 
-	vid_directory = sys.argv[1]
-	repeat = int(sys.argv[2])
+	vid_directory = opts.frame_dir
+	repeat = opts.reps
+	if not repeat: 
+		repeat = 0
 	fp = FramePlayer(vid_directory, repeat)
 	fp.play()
 	rospy.sleep(repeat * fp.velocity * (len(fp.images)) + fp.velocity * 2)
