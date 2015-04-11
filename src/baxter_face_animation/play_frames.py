@@ -48,7 +48,7 @@ class FramePlayer:
 			if (self.current_frame >= len(self.images)):
 				self.repetitions += 1
 				self.current_frame = 0
-				if self.pause: rospy.sleep(pause)
+				if self.pause: rospy.sleep(self.pause)
 
 		if self.repetitions > self.repeat: 
 			print self.current_frame
