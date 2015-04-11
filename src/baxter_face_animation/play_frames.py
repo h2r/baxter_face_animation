@@ -51,7 +51,6 @@ class FramePlayer:
 				if self.pause: rospy.sleep(self.pause)
 
 		if self.repetitions > self.repeat: 
-			print self.current_frame
 			exit()
 
 				
@@ -59,6 +58,19 @@ class FramePlayer:
 		msg = cv_bridge.CvBridge().cv2_to_imgmsg(image, encoding="bgr8")
 		self.image_publisher.publish(msg)
 		self.current_frame += self.delta
+
+	def duration(self): 
+		repeat = self.repeat
+		if not self.repeat: 
+			repeat = 0
+		pause = self.pause
+		if not self.pause: 
+			pause = 0.0
+		reverse_time = 1
+		if self.reverse: 
+			reverse_time = 2
+		return 1+ (reverse_time * repeat *  (pause+ 1 +  self.velocity * (len(self.images))))
+
 
 
 
@@ -76,17 +88,13 @@ def main():
 
 	vid_directory = opts.frame_dir
 	repeat = opts.reps
-	if not repeat: 
-		repeat = 0
 	pause = opts.pause
-	if not pause: 
-		pause = 0.0
 	fp = FramePlayer(vid_directory, repeat, opts.reverse, pause)
 	fp.play()
 
-	reverse_time = 1
 	if opts.reverse: 
 		reverse_time = 2
-	rospy.sleep(1+ reverse_time * repeat *  (pause+ 1 +  fp.velocity * (len(fp.images)) + fp.velocity * 2))
+	print fp.duration()
+	rospy.sleep(fp.duration())
 
 main()
