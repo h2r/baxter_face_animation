@@ -54,7 +54,7 @@ def main():
 	rospy.init_node('frame_player', anonymous=True)
 
 	vid_directory = sys.argv[1]
-	repeat = sys.argv[2]
+	repeat = int(sys.argv[2])
 	fp = FramePlayer(vid_directory, repeat)
 	fp.play()
 	rospy.sleep(repeat * fp.velocity * (len(fp.images)) + fp.velocity * 2)
