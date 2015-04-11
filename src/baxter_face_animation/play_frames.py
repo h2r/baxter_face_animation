@@ -36,7 +36,7 @@ class FramePlayer:
 			if (self.repetitions > self.repeat): 
 				exit()
 			else: 
-				current_frame = 0
+				self.current_frame = 0
 				
 		image = self.images[self.current_frame]
 		msg = cv_bridge.CvBridge().cv2_to_imgmsg(image, encoding="bgr8")
