@@ -29,10 +29,12 @@ class FramePlayer:
 		self.timer = rospy.Timer(rospy.Duration(self.velocity), self.play_cb)
 
 	def play_cb(self, time): 
+		if (self.current_frame >= len(self.images)):
+			exit()
 		image = self.images[self.current_frame]
 		msg = cv_bridge.CvBridge().cv2_to_imgmsg(image, encoding="bgr8")
 		self.image_publisher.publish(msg)
-		self.current_frame = (self.current_frame + 1) % len(self.images)
+		self.current_frame = self.current_frame + 1
 
 
 
@@ -43,7 +45,6 @@ def main():
 	vid_directory = sys.argv[1]
 	fp = FramePlayer(vid_directory)
 	fp.play()
-	while not rospy.is_shutdown(): 
-		fp.rate.sleep()
+	rospy.sleep(fp.velocity * (len(fp.images) + 2))
 
 main()
