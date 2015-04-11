@@ -13,12 +13,14 @@ from os import sys
 from PyQt4.QtCore import SIGNAL, QTimer
 
 class FramePlayer: 
-	def __init__(self, vid_directory): 
+	def __init__(self, vid_directory, repeat): 
 		self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=100)
 		files = sorted([ f for f in listdir(vid_directory) ])
 		print files
 		self.images = [cv2.imread(vid_directory + f) for f in files]
 		self.rate = rospy.Rate(50)
+		self.repeat = repeat
+		self.repetitions = 0
 
 		self.velocity = (1/20.0)
 
@@ -30,7 +32,12 @@ class FramePlayer:
 
 	def play_cb(self, time): 
 		if (self.current_frame >= len(self.images)):
-			exit()
+			self.repetitions += 1
+			if (self.repetitions > self.repeat): 
+				exit()
+			else: 
+				current_frame = 0
+				
 		image = self.images[self.current_frame]
 		msg = cv_bridge.CvBridge().cv2_to_imgmsg(image, encoding="bgr8")
 		self.image_publisher.publish(msg)
@@ -41,13 +48,13 @@ class FramePlayer:
 
 def main(): 
 	if (len(sys.argv) < 2): 
-		print("usage: play_frames.py <frame_dir (ends in /)>")
+		print("usage: play_frames.py <frame_dir (ends in /)> <repeatNum>")
 		return
 
 	rospy.init_node('frame_player', anonymous=True)
 
 	vid_directory = sys.argv[1]
-	fp = FramePlayer(vid_directory)
+	fp = FramePlayer(vid_directory, repeat)
 	fp.play()
 	rospy.sleep(fp.velocity * (len(fp.images) + 2))
 
