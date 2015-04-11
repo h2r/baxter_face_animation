@@ -18,7 +18,7 @@ class FramePlayer:
 
 		self.repeat = repeat
 		self.reverse = reverse
-		self.pause
+		self.pause = pause
 
 		self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=100)
 		files = sorted([ f for f in listdir(vid_directory) ])
