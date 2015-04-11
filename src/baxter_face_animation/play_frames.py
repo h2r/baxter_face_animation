@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 import glob
 import cv2
 import cv_bridge
@@ -40,6 +40,10 @@ class FramePlayer:
 
 
 def main(): 
+	if (len(sys.argv) < 2): 
+		print("usage: play_frames.py <frame_dir (ends in /)>")
+		return
+
 	rospy.init_node('frame_player', anonymous=True)
 
 	vid_directory = sys.argv[1]
