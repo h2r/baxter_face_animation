@@ -87,6 +87,6 @@ def main():
 	reverse_time = 1
 	if opts.reverse: 
 		reverse_time = 2
-	rospy.sleep(reverse_time * repeat *  (pause +  fp.velocity * (len(fp.images)) + fp.velocity * 2))
+	rospy.sleep(reverse_time * repeat *  (pause+ 1 +  fp.velocity * (len(fp.images)) + fp.velocity * 2))
 
 main()
