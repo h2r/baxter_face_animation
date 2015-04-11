@@ -16,7 +16,6 @@ class FramePlayer:
 	def __init__(self, vid_directory, repeat): 
 		self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=100)
 		files = sorted([ f for f in listdir(vid_directory) ])
-		print files
 		self.images = [cv2.imread(vid_directory + f) for f in files]
 		self.rate = rospy.Rate(50)
 		self.repeat = repeat
