@@ -37,11 +37,12 @@ class FramePlayer:
 			if self.delta == -1 and self.current_frame == 0: 
 				self.delta = 1
 				self.repetitions += 1
-			elif self.delta == 1  and self.current_frame == len(self.images): 
+			elif self.delta == 1  and self.current_frame == len(self.images) - 1: 
 				self.delta = -1
 		else: 
 			if (self.current_frame >= len(self.images)):
 				self.repetitions += 1
+				self.current_frame = 0
 
 		if self.repetitions > self.repeat: 
 			exit()
