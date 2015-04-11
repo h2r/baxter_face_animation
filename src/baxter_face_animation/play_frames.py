@@ -33,6 +33,9 @@ class FramePlayer:
 		self.timer = rospy.Timer(rospy.Duration(self.velocity), self.play_cb)
 
 	def play_cb(self, time): 
+		if self.repetitions > self.repeat: 
+			print self.current_frame
+			exit()
 		if self.reverse: 
 			if self.delta == -1 and self.current_frame == 0: 
 				self.delta = 1
@@ -44,8 +47,6 @@ class FramePlayer:
 				self.repetitions += 1
 				self.current_frame = 0
 
-		if self.repetitions > self.repeat: 
-			exit()
 
 				
 		image = self.images[self.current_frame]
