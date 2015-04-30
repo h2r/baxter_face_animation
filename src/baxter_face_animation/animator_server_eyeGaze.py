@@ -11,6 +11,7 @@ import math
 import baxter_interface
 from  geometry_msgs.msg import PoseStamped
 import tf
+import numpy as np
 
 class Animation:
     def __init__(self, directory):
@@ -29,7 +30,7 @@ class Animation:
 
         self.listener = tf.TransformListener();
 
-
+        print("a");
         self.image_publisher = rospy.Publisher("/robot/xdisplay", Image,
                                                queue_size=10)
 
@@ -62,39 +63,51 @@ class Animation:
         self.checkrep()
         return self.publish
 
+    def quat_to_rot(self, q):
+        r1c1 = 1 - 2*(q[2]*q[2] + q[3]*q[3])
+        r1c2 = 2*(q[1]*q[2] - q[0]*q[3])
+        r1c3 = 2*(q[0]*q[2] + q[1]*q[3])
+
+        r2c1 = 2*(q[1]*q[2] + q[0]*q[3])
+        r2c2 = 1 - 2*(q[1]*q[1] + q[3]*q[3])
+        r2c3 = 2*(q[2]*q[3] - q[0]*q[1])
+
+        r3c1 = 2*(q[1]*q[3] - q[0]*q[2])
+        r3c2 = 2*(q[0]*q[1] + q[2]*q[3])
+        r3c3 = 1- 2*(q[1]*q[1] + q[2]*q[2])
+
+        mat = [[r1c1, r1c2, r1c3, 0],   
+                   [r2c1, r2c2, r2c3, 0],
+                   [r3c1, r3c2, r3c3, 0],
+                   [0, 0, 0, 1]]
+        return mat
+
 
     def set_value(self, value):
         if isinstance(value, PoseStamped):
             print "setting value from topic"
             value = value
-
-           # value.header.frame_id - frame that point in reference to
-           # transform to screen frame
-           # value.pose.point.x value.pose.point.y value.pose.point.z
-            #print(value);
         frame = value.header.frame_id
         success = False
-        time = rospy.Time.now() + rospy.Duration(2.0)
+        time = rospy.Time.now()
         trans = []
         rot = []
         while (not success):
             try:
-                self.listener.waitForTransform("reference/base", "reference/head_camera", rospy.Time.now(), rospy.Duration(5.0))
-                (trans, rot) = self.listener.lookupTransform("/reference/base", "/reference/head_camera", rospy.Time.now())
+                (trans, rot) = self.listener.lookupTransform(frame, "/reference/head_camera", rospy.Time.now())
                 success = True;
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 success = False
-                print("Transform Error")
-            sleep(0.1);
+                
+        mat = self.quat_to_rot(rot);
+        mat[0][3] = trans[0];
+        mat[1][3] = trans[1];
+        mat[2][3] = trans[2];
+        
+        point = [value.pose.position.x, value.pose.position.y, value.pose.position.z, 1]
 
-        # print(trans);
-        # print(rot);
-        # try:
-        #    # (trans,rot) = self.listener.lookupTransform(frame, "reference/head_camera", rospy.Time(0))
-        #     (trans,rot) = self.listener.lookupTransform("reference/base", "reference/head_camera", rospy.Time(value.header.stamp))
-        #     # var mat = 
-        # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-        #     print("Transform Error")
+        trans_point = np.dot(mat, point);
+        # print(trans_point)
 
         # print self.current_idx
         # self.current_value = value

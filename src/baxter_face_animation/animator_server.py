@@ -108,7 +108,7 @@ def main():
     rospy.init_node('animator_server', anonymous=True)
     rate = rospy.Rate(30)
     rospack = rospkg.RosPack()
-    path = rospack.get_path('baxter_face_animation') + "/data/confused"
+    path = rospack.get_path('baxter_face_animation') + "/data/avery_v2"
 
     Animation(path)
     while not rospy.is_shutdown():
