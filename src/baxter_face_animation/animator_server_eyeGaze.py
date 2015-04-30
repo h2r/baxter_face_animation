@@ -9,7 +9,7 @@ from std_msgs.msg import Int32, Float32
 import rospkg
 import math
 import baxter_interface
-from  geometry_msgs.msg import PoseStamped
+from  geometry_msgs.msg import Pose
 import tf
 import numpy as np
 
@@ -34,7 +34,7 @@ class Animation:
         self.image_publisher = rospy.Publisher("/robot/xdisplay", Image,
                                                queue_size=10)
 
-        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command", PoseStamped, self.set_value)
+        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command", Pose, self.set_value)
 
         # self.valuey_subscriber = rospy.Subscriber("/eyeGaze/valuey/command", PoseStamped, self.set_valuey)
 
@@ -84,21 +84,22 @@ class Animation:
 
 
     def set_value(self, value):
-        if isinstance(value, PoseStamped):
+        print(value)
+        if isinstance(value, Pose):
             print "setting value from topic"
             value = value
-        frame = value.header.frame_id
+        # frame = value.header.frame_id
         success = False
         time = rospy.Time.now()
         trans = []
         rot = []
         while (not success):
             try:
-                (trans, rot) = self.listener.lookupTransform(frame, "/reference/head_camera", rospy.Time.now())
+                (trans, rot) = self.listener.lookupTransform("/refernece/base", "/reference/head_camera", rospy.Time.now())
                 success = True;
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 success = False
-                
+
         mat = self.quat_to_rot(rot);
         mat[0][3] = trans[0];
         mat[1][3] = trans[1];
@@ -107,20 +108,16 @@ class Animation:
         point = [value.pose.position.x, value.pose.position.y, value.pose.position.z, 1]
 
         trans_point = np.dot(mat, point);
-        # print(trans_point)
-
-        # print self.current_idx
-        # self.current_value = value
-        # self.current_idx = int(value)#int((value / 100.0) * len(self.images))
-        # self.checkrep()
-       # return self.publish_image()
+        self.set_valuex(trans_point[0]);
+        self.set_valuey(trans_point[1]);
 
     def set_valuex(self, value):
         if isinstance(value, Int32):
             print "setting value from topic"
             value = int(value.data)
-        angle = math.radians(value);
-        self._head.set_pan(angle, speed=5, timeout=0)
+        print(value)
+        #angle = math.radians(value);
+        self._head.set_pan(value, speed=5, timeout=0)
 
     def set_valuey(self, value):
         if isinstance(value, Int32):
