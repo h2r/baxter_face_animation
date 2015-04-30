@@ -36,25 +36,25 @@ class Ui_MainWindow(object):
         self.yValueSlider.setOrientation(QtCore.Qt.Vertical)
         self.yValueSlider.setObjectName(_fromUtf8("yValueSlider"))
         self.gridLayout.addWidget(self.yValueSlider, 1, 1, 1, 1)
-        self.yValueSlider.setRange(-45, 45);
+        self.yValueSlider.setRange(0, 24);
 
         self.yTargetSlider = QtGui.QSlider(self.centralwidget)
         self.yTargetSlider.setOrientation(QtCore.Qt.Vertical)
         self.yTargetSlider.setObjectName(_fromUtf8("yTargetSlider"))
         self.gridLayout.addWidget(self.yTargetSlider, 1, 4, 1, 1)
-        self.yTargetSlider.setRange(-45, 45);
+        self.yTargetSlider.setRange(0, 24);
 
         self.xValueSlider = QtGui.QSlider(self.centralwidget)
         self.xValueSlider.setOrientation(QtCore.Qt.Horizontal)
         self.xValueSlider.setObjectName(_fromUtf8("xValueSlider"))
         self.gridLayout.addWidget(self.xValueSlider, 8, 1, 1, 1)
-        self.xValueSlider.setRange(0, 48);
+        self.xValueSlider.setRange(-80, 80);
 
         self.xTargetSlider = QtGui.QSlider(self.centralwidget)
         self.xTargetSlider.setOrientation(QtCore.Qt.Horizontal)
         self.xTargetSlider.setObjectName(_fromUtf8("xTargetSlider"))
         self.gridLayout.addWidget(self.xTargetSlider, 8, 4, 1, 1)
-        self.xTargetSlider.setRange(-90, 90);
+        self.xTargetSlider.setRange(-80, 80);
 
         MainWindow.setCentralWidget(self.centralwidget)
 
