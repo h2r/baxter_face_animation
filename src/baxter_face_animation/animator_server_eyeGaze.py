@@ -34,7 +34,7 @@ class Animation:
         self.image_publisher = rospy.Publisher("/robot/xdisplay", Image,
                                                queue_size=10)
 
-        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command", Pose, self.set_value)
+        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command2", Pose, self.set_value)
 
         # self.valuey_subscriber = rospy.Subscriber("/eyeGaze/valuey/command", PoseStamped, self.set_valuey)
 
@@ -47,6 +47,8 @@ class Animation:
 
 
         self.timer = rospy.Timer(rospy.Duration(self.velocity), self.timer_cb)
+
+        self.set_valuey(49);
 
  
     def set_velocity(self, velocity):
@@ -95,7 +97,7 @@ class Animation:
         rot = []
         while (not success):
             try:
-                (trans, rot) = self.listener.lookupTransform("/refernece/base", "/reference/head_camera", rospy.Time.now())
+                (trans, rot) = self.listener.lookupTransform("/reference/base", "/reference/head_camera", rospy.Time.now())
                 success = True;
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 success = False
@@ -105,35 +107,42 @@ class Animation:
         mat[1][3] = trans[1];
         mat[2][3] = trans[2];
         
-        point = [value.pose.position.x, value.pose.position.y, value.pose.position.z, 1]
+
+        point = [value.position.x, value.position.y, value.position.z, 1]
 
         trans_point = np.dot(mat, point);
-        self.set_valuex(trans_point[0]);
-        self.set_valuey(trans_point[1]);
+
+        x = trans_point[0]
+        z = trans_point[2]
+        pheta = math.atan(x/z)
+
+        if (pheta>90): pheta=2*math.pi
+        if (pheta<-90): pheta=-2*math.pi
+
+        self.set_valuex(pheta);
+        self.set_targety(-2.0)
+        #self.set_targety(trans_point[1]);
 
     def set_valuex(self, value):
         if isinstance(value, Int32):
             print "setting value from topic"
-            value = int(value.data)
-        print(value)
+            # value = int(value.data)
+        #print(value)
         #angle = math.radians(value);
         self._head.set_pan(value, speed=5, timeout=0)
 
     def set_valuey(self, value):
-        if isinstance(value, Int32):
-            print "setting value from topic"
-            value = int(value.data)
-        print self.current_idx
         self.current_value = value
-        self.current_idx = int(value)#int((value / 100.0) * len(self.images))
+        self.current_idx = value;
         self.checkrep()
         return self.publish_image()
 
     def checkrep(self):
         assert 0 <= self.current_idx < len(self.images), self.current_idx
-        assert 0 <= self.current_value < 100, self.current_value
-        assert self.current_target == None or (0 <= self.current_target < 100), self.current_target
+        #assert 0 <= self.current_value < 100, self.current_value
+        #assert self.current_target == None or (0 <= self.current_target < 100), self.current_target
     def publish_image(self):
+        print(self.current_idx)
         msg = cv_bridge.CvBridge().cv2_to_imgmsg(self.image, encoding="bgr8")
         self.image_publisher.publish(msg)
         return self.images[self.current_idx]
@@ -146,11 +155,7 @@ class Animation:
         # self.current_target = target
 
     def set_targety(self, target):
-        if isinstance(target, Int32):
-            print "setting target from topic"
-            target = target.data;#((target.data)/3.75)+25
-
-        print "setting target", target
+        target = int((target+2)*(49/4.0))#((target.data)/3.75)+25
         self.current_target = target
 
 
@@ -169,7 +174,7 @@ class Animation:
 
     def animate(self):
         if self.current_target != None:
-            #print "target", self.current_target, self.current_value
+            print "target", self.current_target, self.current_value
             if self.current_target < self.current_value:
                 self.set_valuey(self.current_value - 1)
             elif self.current_target > self.current_value:
