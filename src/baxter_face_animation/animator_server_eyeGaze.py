@@ -12,6 +12,8 @@ import baxter_interface
 from  geometry_msgs.msg import Pose
 import tf
 import numpy as np
+#from tf.transformations import euler_from_quaternion
+#from tf.transformations import quaternion_matrix
 
 class Animation:
     def __init__(self, directory):
@@ -27,7 +29,7 @@ class Animation:
         self.current_target = None
 
         self._head = baxter_interface.Head()
-
+        self._head.set_pan(0.0)
         self.listener = tf.TransformListener();
 
         print("a");
@@ -82,6 +84,10 @@ class Animation:
                    [r2c1, r2c2, r2c3, 0],
                    [r3c1, r3c2, r3c3, 0],
                    [0, 0, 0, 1]]
+
+        #(ax,ay,az) = euler_from_quaternion(q,'xyzs')
+        
+        #return 
         return mat
 
 
@@ -98,7 +104,7 @@ class Animation:
         while (not success):
             try:
                 (trans, rot) = self.listener.lookupTransform("/reference/base", "/reference/head_camera", rospy.Time.now())
-                success = True;
+                success = True
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 success = False
 
@@ -109,15 +115,18 @@ class Animation:
         
 
         point = [value.position.x, value.position.y, value.position.z, 1]
+	head = [0.15, 0.0, 0.67]
+	
 
         trans_point = np.dot(mat, point);
 
         x = trans_point[0]
         z = trans_point[2]
-        pheta = math.atan(x/z)
-
-        if (pheta>90): pheta=2*math.pi
-        if (pheta<-90): pheta=-2*math.pi
+        #pheta = math.atan(x/z)
+        pheta = math.atan2(value.position.y,value.position.x-0.15)
+        print "Pheta " + str(pheta*180/math.pi)
+        #while (pheta>90): pheta=2*math.pi
+        #while (pheta<-90): pheta=-2*math.pi
 
         self.set_valuex(pheta);
         self.set_targety(-2.0)
@@ -129,6 +138,7 @@ class Animation:
             # value = int(value.data)
         #print(value)
         #angle = math.radians(value);
+        print "xval = " + str(value*180/math.pi) 
         self._head.set_pan(value, speed=5, timeout=0)
 
     def set_valuey(self, value):
@@ -170,7 +180,6 @@ class Animation:
        
     def timer_cb(self, time):
         self.animate()
-        self.publish_state()
 
     def animate(self):
         if self.current_target != None:
