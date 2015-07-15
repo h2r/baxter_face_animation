@@ -12,6 +12,7 @@ import baxter_interface
 from  geometry_msgs.msg import Pose
 import tf
 import numpy as np
+import time
 
 class Animation:
     def __init__(self, directory):
@@ -30,7 +31,7 @@ class Animation:
         self.image_publisher = rospy.Publisher("/robot/xdisplay", Image, queue_size=10)
         self.valuey_publisher = rospy.Publisher("/eyeGaze/valuey/state", Int32, queue_size=10)
         self.targety_publisher = rospy.Publisher("/eyeGaze/targety/state", Int32, queue_size=10)
-        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command2", Pose, self.set_value)
+        self.valuex_subscriber = rospy.Subscriber("/eyeGaze/Point/command2", Pose, self.set_value, queue_size=1)
         self.set_valuey(49);
 
  
@@ -57,18 +58,28 @@ class Animation:
         y = value.position.y # head offset is essentially zero
         z = value.position.z - 0.67 # offset from head
         pheta = math.atan2(y,x)
+        if pheta < 0: 
+            pheta = max(pheta, -1 * math.pi/2)
+        elif pheta > 0: 
+            pheta = min(pheta, math.pi/2)
+
         print "Pheta " + str(pheta*180/math.pi)
 
         gd = math.sqrt(x*x+y*y) #ground (xy) distance from head to object
         self.set_valuex(pheta);
         #self.set_targety(-2.0)
         self.set_targety(math.atan2(z,gd))
+        time.sleep(5)
+	self.set_valuex(0)
+        self.set_targety(-1.0) 
+        #self._head.set_pan(0.0)
 
     def set_valuex(self, value):
+        print "set_valuex", value
         if isinstance(value, Int32):
             print "setting value from topic"
         print "xval = " + str(value*180/math.pi) 
-        self._head.set_pan(value, speed=5, timeout=0)
+        self._head.set_pan(value, speed=5, timeout=20)
 
     def set_valuey(self, value):
         self.current_value = value
@@ -119,7 +130,7 @@ def main():
     rospy.init_node('animator_server', anonymous=True)
     rate = rospy.Rate(25)
     rospack = rospkg.RosPack()
-    path = rospack.get_path('baxter_face_animation') + "/data/DOWN"
+    path = rospack.get_path('baxter_face_animation') + "/data/upanddown"
     Animation(path)
     while not rospy.is_shutdown():
         rate.sleep()

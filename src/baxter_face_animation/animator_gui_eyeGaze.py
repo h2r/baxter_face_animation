@@ -33,7 +33,7 @@ class MainWindow(QMainWindow, animator_ui_eyeGaze.Ui_MainWindow):
 
         # self.wobbler = move_head.Wobbler()
         self.valuex_publisher = rospy.Publisher("/eyeGaze/valuex/command", Int32, queue_size=10)
-        # self.targetx_publisher = rospy.Publisher("/eyeGaze/targetx/command", Int32, queue_size=10)
+        self.targetx_publisher = rospy.Publisher("/eyeGaze/targetx/command", Int32, queue_size=10)
         self.valuey_publisher = rospy.Publisher("/eyeGaze/valuey/command", Int32, queue_size=10)
         self.targety_publisher = rospy.Publisher("/eyeGaze/targety/command", Int32, queue_size=10)
 
