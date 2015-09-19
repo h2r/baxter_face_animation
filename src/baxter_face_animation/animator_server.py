@@ -26,6 +26,8 @@ class Animation:
 
         self.target_subscriber = rospy.Subscriber("/confusion/target/command", Int32, self.set_target)
 
+        self.target_subscriber = rospy.Subscriber("/confusion/target/command", Int32, self.set_target)
+
         self.value_publisher = rospy.Publisher("/confusion/value/state", Int32,
                                                queue_size=10)
         self.target_publisher = rospy.Publisher("/confusion/target/state", Int32,
